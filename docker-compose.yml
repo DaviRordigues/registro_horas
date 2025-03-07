@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: bash -c "pip install -r requirements.txt &&python manage.py collectstatic --noinput &&python manage.py runserver 0.0.0.0:8000 --settings=${DJANGO_SETTINGS}"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=settings.base
+    networks:
+      - default
+
+networks:
+  default:

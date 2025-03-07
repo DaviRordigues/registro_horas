@@ -1,0 +1,607 @@
+{% load humanize %}
+<html lang="en-us" dir="ltr" x-data="{ adminTheme: $persist('auto').as('adminTheme') }"
+      x-bind:class="{'light': adminTheme === 'light' || (adminTheme === 'light' &amp;&amp; window.matchMedia('(prefers-color-scheme: light)').matches)}"
+      class="light">
+<head>
+    <title>
+        CBMES VIATURAS
+    </title>
+
+
+    <link href="/static/unfold/fonts/inter/styles.css" rel="stylesheet">
+    <link href="/static/unfold/fonts/material-symbols/styles.css" rel="stylesheet">
+
+    <link href="/static/styles.css" rel="stylesheet">
+
+
+    <link href="/static/unfold/css/styles.css" rel="stylesheet">
+    <link href="/static/unfold/css/simplebar.css" rel="stylesheet">
+
+    <script src="/static/unfold/js/alpine.anchor.js" defer=""></script>
+    <script src="/static/unfold/js/alpine.persist.js" defer=""></script>
+    <script src="/static/unfold/js/alpine.js" defer=""></script>
+    <script src="/static/unfold/js/htmx.js"></script>
+    <script src="/static/unfold/js/chart.js"></script>
+    <script src="/static/unfold/js/charts/situacaoChartComponent.js"></script>
+    <script src="/static/unfold/js/charts/barChartComponent.js"></script>
+    <script src="/static/unfold/js/charts/localidadeChartComponent.js"></script>
+    <script src="/static/unfold/js/charts/tipoveiculoChartComponent.js"></script>
+    <script src="/static/unfold/js/charts/modelosChartComponent.js"></script>
+    <script src="/static/unfold/js/charts/baseChart.js"></script>
+
+
+    <script defer="" data-domain="demo.unfoldadmin.com" src="https://plausible.io/js/script.js"></script>
+
+
+    <script src="/static/unfold/js/app.js"></script>
+
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <meta name="robots" content="NONE,NOARCHIVE">
+
+
+    <style>
+        html {
+
+
+            --color-font-subtle-light: 107 114 128;
+
+            --color-font-subtle-dark: 156 163 175;
+
+            --color-font-default-light: 75 85 99;
+
+            --color-font-default-dark: 209 213 219;
+
+            --color-font-important-light: 17 24 39;
+
+            --color-font-important-dark: 243 244 246;
+
+
+            --color-primary-50: 255 245 245;
+            --color-primary-100: 255 232 232;
+            --color-primary-200: 255 213 213;
+            --color-primary-300: 254 180 180;
+            --color-primary-400: 252 132 132;
+            --color-primary-500: 247 85 85;
+            --color-primary-600: 234 51 51;
+            --color-primary-700: 206 34 34;
+            --color-primary-800: 168 33 33;
+            --color-primary-900: 135 28 28;
+            --color-primary-950: 100 7 7;
+
+
+        }
+    </style>
+
+    <style>                      .htmx-indicator {
+        opacity: 0;
+        transition: opacity 200ms ease-in;
+    }
+
+    .htmx-request .htmx-indicator {
+        opacity: 1
+    }
+
+    .htmx-request.htmx-indicator {
+        opacity: 1
+    }                    </style>
+</head>
+
+<body class="antialiased bg-white font-sans text-font-default-light text-sm dark:bg-gray-900 dark:text-font-default-dark "
+      data-admin-utc-offset="7200" x-data="{ activeTab: 'general', sidebarMobileOpen: false, sidebarDesktopOpen: true }"
+      x-init="activeTab = window.location.hash?.replace('#', '') || 'general'" cz-shortcut-listen="true">
+
+<div class="flex min-h-screen">
+
+
+    <div class="relative z-50">
+        <div @click="sidebarDesktopOpen = !sidebarDesktopOpen" hx-get="/admin/toggle-sidebar/" hx-swap="none"
+             class="bg-white border cursor-pointer fixed h-6 hidden items-center justify-center rounded-full text-gray-500 top-5 -translate-x-1/2 w-6 z-50 xl:flex dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 ml-72"
+             :class="{'ml-6 rotate-180': !sidebarDesktopOpen, 'ml-72': sidebarDesktopOpen}">
+        <span class="material-symbols-outlined md-16">
+            first_page
+        </span>
+        </div>
+
+        <div @click="sidebarMobileOpen = !sidebarMobileOpen"
+             class="fixed bottom-0 bg-gray-700 cursor-pointer flex items-center left-0 mb-2 ml-2 justify-center px-2 py-1 rounded-full shadow-sm text-xs text-white uppercase z-50 xl:hidden"
+             :class="{'ml-72 -translate-x-1/2': sidebarMobileOpen}">
+            Menu
+        </div>
+
+        <div :class="{'xl:block': sidebarDesktopOpen, 'xl:hidden': !sidebarDesktopOpen, 'max-xl:fixed': sidebarMobileOpen, 'hidden': !sidebarMobileOpen }"
+             class="xl:block hidden">
+
+
+            <div class="relative min-w-sidebar transition-width w-sidebar z-30">
+                <nav id="nav-sidebar"
+                     class="bg-gray-50 border-r border-gray-200 bottom-0 fixed max-h-screen top-0 transition-width w-sidebar dark:bg-gray-900 dark:border-gray-800">
+                    <div class="flex flex-col min-h-screen min-w-sidebar dark:bg-gray-950/20">
+                        <div class="border-b border-gray-200 mb-5 py-3 dark:border-gray-800">
+                            <div class="flex font-semibold h-10 items-center px-6 text-font-important-light tracking-tight dark:text-font-important-dark xl:text-base">
+
+
+                                <a href="{% url "admin:index" %}"
+                                   class="bg-red-600 flex h-8 items-center justify-center rounded-md mr-4 text-white text-xs w-8">
+                                    <span class="material-symbols-outlined md-18">{% if site_symbol %}
+                                        {{ site_symbol }}{% else %}directions_car{% endif %}</span>
+                                </a>
+
+
+                                <h1 id="site-name">
+                                    <a href="/admin/">
+                                        CBMES VIATURAS
+                                    </a>
+                                </h1>
+
+
+                            </div>
+                        </div>
+
+
+                        <div class="mb-5 mx-3 relative" x-data="{openSearchResults: false}">
+                            <div class="">
+
+                                <div class="absolute opacity-0 htmx-indicator mt-0.5 right-2 top-2">
+                                </div>
+                            </div>
+
+                            <div id="search-results" x-show="openSearchResults" style="display: none;"></div>
+                        </div>
+
+
+                        <div class="h-0 flex-grow overflow-auto" data-simplebar="init">
+                            <div class="simplebar-wrapper" style="margin: 0px;">
+                                <div class="simplebar-height-auto-observer-wrapper">
+                                    <div class="simplebar-height-auto-observer"></div>
+                                </div>
+
+                                <div class="simplebar-mask">
+                                    <div class="simplebar-offset" style="right: 0px; bottom: 0px;">
+                                        <div class="simplebar-content-wrapper" tabindex="0" role="region"
+                                             aria-label="scrollable content" style="height: auto; overflow: hidden;">
+                                            <div class="simplebar-content" style="padding: 0px;">
+
+
+                                                <div class="hidden mb-3 has-[ol]:has-[li]:block">
+                                                    <ol class="px-6">
+                                                        <li class="flex items-center">
+                                                            <a href="/admin/" class="flex items-center">
+                <span class="material-symbols-outlined md-18" style="color: #000000;">
+                    admin_panel_settings
+                </span>
+                                                                <span class="text-sm text-black dark:text-white ml-4">
+                    ADMIN
+                </span>
+                                                            </a>
+                                                        </li>
+                                                    </ol>
+                                                </div>
+
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+
+        </div>
+    </div>
+
+
+    <div id="main" class="shadow flex-grow min-w-0">
+
+
+        <div class="border-b border-gray-200 mb-6 px-4 lg:px-12 dark:border-gray-800">
+            <div class="container flex items-center h-16 mx-auto py-4">
+                <div id="header-inner" class="flex items-center w-full">
+                    <div class="flex items-center w-full">
+
+
+                        <div class="flex-grow font-semibold min-w-0 mr-3">
+                            <h1 class="overflow-hidden text-ellipsis text-sm whitespace-nowrap xl:text-base text-font-important-light dark:text-font-important-dark">
+
+            <span class="tracking-tight">
+
+
+                Dashboard
+            </span>
+
+
+                            </h1>
+                        </div>
+
+
+                        <div class="flex items-center ml-auto">
+                            <div class="flex flex-row group items-center leading-none relative">
+                                <div class="flex gap-4 items-center">
+                                    <div class="relative" x-data="{ openTheme: false }">
+                                        </a>
+                                        <nav class="absolute bg-white border flex flex-col leading-none overflow-hidden py-1 -right-2 rounded shadow-lg top-7 w-40 z-50 dark:bg-gray-800 dark:border-gray-700"
+                                             x-show="openTheme" @click.outside="openTheme = false"
+                                             style="display: none;">
+                                            <a class="cursor-pointer flex flex-row leading-none mx-1 px-3 py-1.5 rounded hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                                               x-on:click="adminTheme = 'dark'"
+                                               x-bind:class="adminTheme == 'dark' &amp;&amp; 'text-primary-600 dark:text-primary-500 dark:hover:!text-primary-500 hover:!text-primary-600'">
+                                                <span class="material-symbols-outlined mr-2">dark_mode</span>
+                                                <span class="leading-none self-center">Dark</span>
+                                            </a>
+
+                                            <a class="cursor-pointer flex flex-row mx-1 px-3 py-1.5 rounded hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                                               x-on:click="adminTheme = 'light'"
+                                               x-bind:class="adminTheme == 'light'  &amp;&amp; 'text-primary-600 dark:text-primary-500 dark:hover:!text-primary-500 hover:!text-primary-600'">
+                                                <span class="material-symbols-outlined mr-2">light_mode</span>
+                                                <span class="leading-none self-center">Light</span>
+                                            </a>
+                                            '
+                                            <a class="cursor-pointer flex flex-row mx-1 px-3 py-1.5 rounded hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200 text-primary-600 dark:text-primary-500 dark:hover:!text-primary-500 hover:!text-primary-600"
+                                               x-on:click="adminTheme = 'auto'"
+                                               x-bind:class="adminTheme == 'auto' &amp;&amp; 'text-primary-600 dark:text-primary-500 dark:hover:!text-primary-500 hover:!text-primary-600'">
+
+                                            </a>
+                                        </nav>
+                                    </div>
+
+
+                                    <div class="relative" x-data="{ openUserLinks: false }">
+
+
+                                        </nav>
+                                    </div>
+
+                                </div>
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="px-4 lg:px-12">
+            <div id="content" class="container mx-auto colM">
+                <div class="mx-auto">
+                    <div class="flex flex-row gap-8 mb-8 flex-col lg:flex-row">
+                        <!-- Viaturas cadastradas -->
+                        <div class="border border-gray-300 flex flex-col flex-grow overflow-hidden p-6 relative rounded-md shadow-sm bg-white lg:w-1/3">
+                            <div class="flex-grow relative ">
+                                <a href="/admin/viaturas/viatura/">
+                                    <p class="leading-relaxed mb-0 text-sm text-gray-700">
+                                        Viaturas cadastradas
+                                    </p>
+                                    <div class="font-semibold text-2xl text-red-600 tracking-tight">
+                                        {{ viaturas_count }}
+                                    </div>
+                                </a>
+                            </div>
+
+                        </div>
+
+                        <!-- Desempenho do Produto B -->
+                        <div class="border border-gray-300 flex flex-col flex-grow overflow-hidden p-6 relative rounded-md shadow-sm bg-white lg:w-1/3">
+                            <div class="flex-grow relative ">
+                                <a href="/admin/viaturas/viatura/?leilao=leiloar">
+                                    <p class="leading-relaxed mb-0 text-sm text-gray-700">
+                                        Viaturas a leiloar
+                                    </p>
+                                    <div class="font-semibold text-2xl text-red-600 tracking-tight">
+                                        {{ leilao_data.total_leiloar }}
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Desempenho do Produto C -->
+                        <div class="border border-gray-300 flex flex-col flex-grow overflow-hidden p-6 relative rounded-md shadow-sm bg-white lg:w-1/3">
+                            <div class="flex-grow relative ">
+                                <p class="leading-relaxed mb-0 text-sm text-gray-700">
+                                    Valor total viaturas
+                                </p>
+                                <div class="font-semibold text-2xl text-red-600 tracking-tight">
+                                    {{ valor_total_viaturas }} R$
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                    <!-- Gráfico de Quantidade de Viaturas por Marca -->
+                    <div class="border border-gray-300 flex flex-col flex-grow overflow-hidden p-6 relative rounded-md shadow-sm bg-white mb-8"
+                         x-data="{ showChartMarca: true, isFullscreenMarca: false }">
+                        <div class="flex justify-between items-center border-b font-semibold mb-6 -mt-2 -mx-6 pb-4 px-6 text-gray-700 border-gray-300">
+                            <h2>Quantidade de Viaturas por Marca</h2>
+                            <div class="flex items-center">
+                                <button @click="showChartMarca = !showChartMarca" class="ml-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none"
+                                         viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M12 4v16m8-8H4" x-show="!showChartMarca"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M20 12H4" x-show="showChartMarca"></path>
+                                    </svg>
+                                </button>
+                                <button @click="isFullscreenMarca = !isFullscreenMarca; toggleFullscreen('viaturasPorMarcaChart')"
+                                        class="ml-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none"
+                                         viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M4 4L20 20M4 20L20 4" x-show="isFullscreenMarca"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M4 10V4h6M20 14v6h-6M14 4h6v6M10 20H4v-6"
+                                              x-show="!isFullscreenMarca"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex-grow relative" x-show="showChartMarca">
+                            <canvas id="viaturasPorMarcaChart" height="100" data-labels='{{ marcas }}'
+                                    data-data='{{ quantidades_marca }}'></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico de Quantidade de Viaturas por Tipo de Veículo -->
+                    <div class="border border-gray-300 flex flex-col flex-grow overflow-hidden p-6 relative rounded-md shadow-sm bg-white mb-8"
+                         x-data="{ showChartTipo: true, isFullscreenTipo: false }">
+                        <div class="flex justify-between items-center border-b font-semibold mb-6 -mt-2 -mx-6 pb-4 px-6 text-gray-700 border-gray-300">
+                            <h2>Quantidade de Viaturas por Tipo de Veículo</h2>
+                            <div class="flex items-center">
+                                <button @click="showChartTipo = !showChartTipo" class="ml-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none"
+                                         viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M12 4v16m8-8H4" x-show="!showChartTipo"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M20 12H4" x-show="showChartTipo"></path>
+                                    </svg>
+                                </button>
+                                <button @click="isFullscreenTipo = !isFullscreenTipo; toggleFullscreen('viaturasPorTipoChart')"
+                                        class="ml-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none"
+                                         viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M4 4L20 20M4 20L20 4" x-show="isFullscreenTipo"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M4 10V4h6M20 14v6h-6M14 4h6v6M10 20H4v-6"
+                                              x-show="!isFullscreenTipo"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex-grow relative" x-show="showChartTipo">
+                            <canvas id="viaturasPorTipoChart" height="100" data-labels='{{ tipos }}'
+                                    data-data='{{ quantidades_tipo }}'></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico de Quantidade de Viaturas por Modelo de Veículo -->
+                <div class="border border-gray-300 flex flex-col flex-grow overflow-hidden p-6 relative rounded-md shadow-sm bg-white mb-8"
+                     x-data="{ showChart: true, isFullscreen: false }">
+                    <div class="flex justify-between items-center border-b font-semibold mb-6 -mt-2 -mx-6 pb-4 px-6 text-gray-700 border-gray-300">
+                        <h2>Quantidade de Viaturas por Modelo de Veículo</h2>
+                        <div class="flex items-center">
+                            <button @click="showChart = !showChart" class="ml-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M12 4v16m8-8H4" x-show="!showChart"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M20 12H4" x-show="showChart"></path>
+                                </svg>
+                            </button>
+                            <button @click="isFullscreen = !isFullscreen; toggleFullscreen('viaturasPorModeloChart')"
+                                    class="ml-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M4 4L20 20M4 20L20 4" x-show="isFullscreen"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M4 10V4h6M20 14v6h-6M14 4h6v6M10 20H4v-6" x-show="!isFullscreen"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex-grow relative" x-show="showChart">
+                        <canvas id="viaturasPorModeloChart" height="100" data-labels='{{ modelos }}'
+                                data-data='{{ quantidades_modelo }}'></canvas>
+                    </div>
+                </div>
+                <!-- Gráfico de Quantidade de Viaturas por Situação -->
+                <div class="border border-gray-300 flex flex-col flex-grow overflow-hidden p-6 relative rounded-md shadow-sm bg-white mb-8"
+                     x-data="{ showChartSituacao: true, isFullscreenSituacao: false }">
+                    <div class="flex justify-between items-center border-b font-semibold mb-6 -mt-2 -mx-6 pb-4 px-6 text-gray-700 border-gray-300">
+                        <h2>Quantidade de Viaturas por Status</h2>
+                        <div class="flex items-center">
+                            <button @click="showChartSituacao = !showChartSituacao" class="ml-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M12 4v16m8-8H4" x-show="!showChartSituacao"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M20 12H4" x-show="showChartSituacao"></path>
+                                </svg>
+                            </button>
+                            <button @click="isFullscreenSituacao = !isFullscreenSituacao; toggleFullscreen('viaturasPorStatusChart')"
+                                    class="ml-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M4 4L20 20M4 20L20 4" x-show="isFullscreenSituacao"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M4 10V4h6M20 14v6h-6M14 4h6v6M10 20H4v-6"
+                                          x-show="!isFullscreenSituacao"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex-grow relative" x-show="showChartSituacao">
+                        <canvas id="viaturasPorSituacaoChart" height="100" data-labels='{{ situacoes }}'
+                                data-data='{{ quantidades_status }}'></canvas>
+                    </div>
+                </div>
+
+                <!-- Gráfico de Quantidade de Viaturas por Localidade -->
+                <div class="border border-gray-300 flex flex-col flex-grow overflow-hidden p-6 relative rounded-md shadow-sm bg-white mb-8"
+                     x-data="{ showChartLocalidade: true, isFullscreenLocalidade: false }">
+                    <div class="flex justify-between items-center border-b font-semibold mb-6 -mt-2 -mx-6 pb-4 px-6 text-gray-700 border-gray-300">
+                        <h2>Quantidade de Viaturas por Lotação</h2>
+                        <div class="flex items-center">
+                            <button @click="showChartLocalidade = !showChartLocalidade" class="ml-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M12 4v16m8-8H4" x-show="!showChartLocalidade"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M20 12H4" x-show="showChartLocalidade"></path>
+                                </svg>
+                            </button>
+                            <button @click="isFullscreenLocalidade = !isFullscreenLocalidade; toggleFullscreen('viaturasPorLotacaoChart')"
+                                    class="ml-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M4 4L20 20M4 20L20 4" x-show="isFullscreenLocalidade"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M4 10V4h6M20 14v6h-6M14 4h6v6M10 20H4v-6"
+                                          x-show="!isFullscreenLocalidade"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex-grow relative" x-show="showChartLocalidade">
+                        <canvas id="viaturasPorLocalidadeChart" height="100" data-labels='{{ lotacoes }}'
+                                data-data='{{ quantidades_lotacao }}'></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!--
+<div class="flex flex-row gap-8 mb-8 flex-col lg:flex-row">
+
+Produtos mais populares nas últimas 2 semanas
+    <div class="border border-gray-300 flex flex-col flex-grow overflow-hidden p-6 relative rounded-md shadow-sm bg-white lg:w-1/2">
+        <h2 class="border-b font-semibold mb-6 -mt-2 -mx-6 pb-4 px-6 text-red-600 border-gray-300">
+            Produtos mais populares nas últimas 2 semanas
+        </h2>
+        <div class="flex-grow relative ">
+            <div class="font-semibold text-2xl text-red-600 tracking-tight mb-2">
+                R$1.234.567,89
+            </div>
+            <p class="leading-relaxed mb-0 text-sm text-gray-700">
+                Receita total entre <strong class="font-semibold text-red-600">1 - 31 de Outubro</strong>.
+                Aumento de
+                <span class="text-blue-600 font-semibold">+3,14%</span> comparado ao mês anterior <strong
+                    class="font-semibold text-red-600">1 - 30 de Setembro</strong>.
+            </p>
+
+            <div class="bg-gray-200 h-px my-6"></div>
+
+            <div class="flex flex-col gap-5">
+                <div class="">
+                    <div class="overflow-hidden relative px-2 py-1 text-sm">
+                        <div class="absolute bottom-0 left-0 rounded top-0 bg-red-100" style="width: 12%"></div>
+                        <div class="flex flex-row relative z-20">
+                            <h3 class="text-gray-700 text-sm">🦆 Social marketing e-book</h3>
+                            <strong class="font-semibold text-red-600 ml-auto">R$8.597,26</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="">
+                    <div class="overflow-hidden relative px-2 py-1 text-sm">
+                        <div class="absolute bottom-0 left-0 rounded top-0 bg-red-100" style="width: 39%"></div>
+                        <div class="flex flex-row relative z-20">
+                            <h3 class="text-gray-700 text-sm">🦍 Freelancing tasks</h3>
+                            <strong class="font-semibold text-red-600 ml-auto">R$6.448,12</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="">
+                    <div class="overflow-hidden relative px-2 py-1 text-sm">
+                        <div class="absolute bottom-0 left-0 rounded top-0 bg-red-100" style="width: 53%"></div>
+                        <div class="flex flex-row relative z-20">
+                            <h3 class="text-gray-700 text-sm">🐋 Development coaching</h3>
+                            <strong class="font-semibold text-red-600 ml-auto">R$5.642,23</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="">
+                    <div class="overflow-hidden relative px-2 py-1 text-sm">
+                        <div class="absolute bottom-0 left-0 rounded top-0 bg-red-100" style="width: 66%"></div>
+                        <div class="flex flex-row relative z-20">
+                            <h3 class="text-gray-700 text-sm">🦑 Product consulting</h3>
+                            <strong class="font-semibold text-red-600 ml-auto">R$5.400,60</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-200 h-px my-6"></div>
+
+            <div class="flex flex-row mt-6 justify-center">
+                <a href="#"
+                   class="border font-medium px-3 py-2 rounded-md text-center bg-white border-gray-300 text-gray-700">
+                    Ver análise detalhada
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="flex flex-col gap-8 lg:w-1/2">
+        <div class="border border-gray-300 flex flex-col flex-grow overflow-hidden p-6 relative rounded-md shadow-sm bg-white">
+            <div class="flex-grow relative ">
+                <p class="leading-relaxed mb-0 text-sm text-gray-700">
+                    Receita da última semana
+                </p>
+                <div class="font-semibold text-2xl text-red-600 tracking-tight mb-8">
+                    R$1.234,56
+                </div>
+                <div class="relative w-full">
+                    <canvas class="chart" data-type="line"
+                            data-value="{&quot;labels&quot;: [&quot;Ter&quot;, &quot;Qua&quot;, &quot;Qui&quot;, &quot;Sex&quot;, &quot;Sáb&quot;, &quot;Dom&quot;, &quot;Seg&quot;, &quot;Ter&quot;], &quot;datasets&quot;: [{&quot;data&quot;: [[1, 23], [1, 18], [1, 14], [1, 26], [1, 23], [1, 27], [1, 19]], &quot;borderColor&quot;: &quot;#9333ea&quot;}]}">
+                    </canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="border border-gray-300 flex flex-col flex-grow overflow-hidden p-6 relative rounded-md shadow-sm bg-white">
+            <div class="flex-grow relative ">
+                <p class="leading-relaxed mb-0 text-sm text-gray-700">
+                    Despesas da última semana
+                </p>
+                <div class="font-semibold text-2xl text-red-600 tracking-tight mb-8">
+                    R$1.234,56
+                </div>
+                <div class="relative w-full">
+                    <canvas class="chart" data-type="line"
+                            data-value="{&quot;labels&quot;: [&quot;Ter&quot;, &quot;Qua&quot;, &quot;Qui&quot;, &quot;Sex&quot;, &quot;Sáb&quot;, &quot;Dom&quot;, &quot;Seg&quot;, &quot;Ter&quot;], &quot;datasets&quot;: [{&quot;data&quot;: [[-1, -8], [-1, -19], [-1, -27], [-1, -18], [-1, -27], [-1, -26], [-1, -9]], &quot;borderColor&quot;: &quot;#f43f5e&quot;}]}">
+                    </canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+-->
+
+    <div id="modal-overlay"
+         class="backdrop-blur-sm bg-opacity-80 bg-gray-900 bottom-0 fixed hidden left-0 mr-1 right-0 top-0 z-50"></div>
+</div>
+
+
+<script src="/static/unfold/js/simplebar.js"></script>
+
+</body>
+</html>
+

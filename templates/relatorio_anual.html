@@ -1,0 +1,246 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrastyle %}
+<!-- Adiciona o Material Icons caso não esteja carregado -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style>
+    /* Impede a rolagem da página */
+    html, body {
+        overflow: hidden;
+        height: 100%;
+    }
+
+    /* Ajustes para o conteúdo principal */
+    .main-content {
+        margin-left: 240px; /* Largura da sidebar */
+        padding: 20px;
+        padding-top: 0px; /* Ajuste para dar um espaço menor no topo */
+        overflow-y: auto; /* Permite rolar dentro do conteúdo, mas não fora */
+    }
+
+    /* Ajuste para remover linhas acima do relatório */
+    .main-content > hr:first-child {
+        display: none;
+    }
+
+    /* Tabela do relatório */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #ddd;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+    }
+
+    th {
+        background: #E74C3C; /* Vermelho suave */
+        color: white;
+    }
+
+    /* Botões de exportação */
+    .btn-exportar {
+        background-color: #D70E0E;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        transition: background 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-exportar:hover {
+        background-color: #b50c0c;
+    }
+
+    .btn-cinza {
+        background-color: #6B7280;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        transition: background 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-cinza:hover {
+        background-color: #4B5563;
+    }
+
+    /* Responsividade */
+    @media (max-width: 1024px) {
+        .main-content {
+            margin-left: 260px;
+        }
+    }
+
+    .select-container {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+        max-width: 200px; /* Ajuste conforme necessário */
+    }
+
+    .select-container select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        width: 100%;
+        padding: 10px;
+        padding-right: 30px; /* Espaço para o ícone */
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: white;
+        font-size: 16px;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .select-container select:hover {
+        border-color: #888;
+    }
+
+    .select-container select:focus {
+        outline: none;
+        border-color: #D70E0E;
+        box-shadow: 0 0 5px rgba(215, 14, 14, 0.5);
+    }
+
+    /* Ícone da seta */
+    .select-container .arrow-icon {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: #666;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Sidebar -->
+<div class="transition-width w-sidebar z-30">
+    <nav id="nav-sidebar"
+         class="bg-gray-50 border-r border-gray-200 bottom-0 fixed left-0 max-h-screen top-0 w-64 dark:bg-gray-900 dark:border-gray-800">
+        <div class="flex flex-col min-h-screen dark:bg-gray-950/20">
+            <div class="border-b border-gray-200 mb-5 py-3 dark:border-gray-800">
+                <div class="flex font-semibold h-10 items-center px-6 text-font-important-light tracking-tight dark:text-font-important-dark xl:text-base">
+                    <a href="{% url 'admin:index' %}"
+                       class="bg-red-600 flex h-8 items-center justify-center rounded-md mr-4 text-white text-xs w-8">
+                        <span class="material-symbols-outlined md-18">{% if site_symbol %}
+                            {{ site_symbol }}{% else %}directions_car{% endif %}
+                        </span>
+                    </a>
+                    <h1 id="site-name">
+                        <a href="/admin/">CBMES VIATURAS</a>
+                    </h1>
+                </div>
+            </div>
+
+            <div class="h-0 flex-grow overflow-auto" data-simplebar="init">
+                <div class="simplebar-wrapper">
+                    <div class="simplebar-mask">
+                        <div class="simplebar-content-wrapper" tabindex="0" role="region"
+                             aria-label="scrollable content">
+                            <div class="simplebar-content">
+                                <div class="hidden mb-3 has-[ol]:has-[li]:block">
+                                    <ol class="px-6">
+                                        <li class="flex items-center">
+                                            <a href="/admin/" class="flex items-center">
+                                                <span class="material-symbols-outlined md-18" style="color: #000000;">
+                                                    admin_panel_settings
+                                                </span>
+                                                <span class="text-sm text-black dark:text-white ml-4">
+                                                    ADMIN
+                                                </span>
+                                            </a>
+                                        </li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</div>
+
+<!-- Conteúdo Principal -->
+<div class="main-content">
+    <h2 class="text-center font-bold text-xl mb-4">Relatório Anual de Consumo de Combustível</h2>
+
+    <!-- Seleção do Ano -->
+    <form method="GET" action="" class="text-center mb-4">
+        <label for="ano" class="font-bold">Selecione o Ano:</label>
+        <div class="select-container">
+            <select name="ano" id="ano" onchange="this.form.submit()">
+                {% for ano_disponivel in anos_disponiveis %}
+                <option value="{{ ano_disponivel }}" {% if ano_disponivel == ano %}selected{% endif %}>
+                    {{ ano_disponivel }}
+                </option>
+                {% endfor %}
+            </select>
+            <!-- Ícone da seta personalizado -->
+            <span class="arrow-icon">
+            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+        </span>
+        </div>
+    </form>
+
+
+
+
+    <!-- Botões de Exportação -->
+    <div class="text-center mb-4">
+        <form method="GET" action="{% url 'exportar_relatorio_excel' %}" class="inline-block">
+            <input type="hidden" name="ano" value="{{ ano|default:'' }}">
+            <button type="submit" class="btn-exportar">
+                📥 Exportar para Excel
+            </button>
+        </form>
+
+        <form method="GET" action="{% url 'exportar_todas_viaturas_excel' %}" class="inline-block ml-4">
+            <input type="hidden" name="ano" value="{{ ano|default:'' }}">
+            <button type="submit" class="btn-cinza">
+                📥 Exportar dados de todas as viaturas
+            </button>
+        </form>
+    </div>
+
+
+
+    {% if consumos %}
+    <table>
+        <tr>
+            <th>Mês</th>
+            <th>Consumo (Litros)</th>
+            <th>Valor Total (R$)</th>
+        </tr>
+        {% for consumo in consumos %}
+        <tr>
+            <td>{% if consumo.mes %}{{ consumo.mes|date:"m/Y" }}{% else %}-{% endif %}</td>
+            <td>{{ consumo.total_consumo }}</td>
+            <td>R$ {{ consumo.total_valor|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p class="text-center text-red-500 font-bold">Nenhum dado de consumo encontrado para este ano.</p>
+    {% endif %}
+</div>
+{% endblock %}

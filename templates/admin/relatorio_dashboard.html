@@ -1,0 +1,9 @@
+{% extends "admin/change_list.html" %}
+
+{% block content %}
+<div style="padding: 20px; background: #f8f9fa; border: 1px solid #ddd;">
+    <h2>Relatório Anual de Combustível</h2>
+    <p>Para acessar o relatório completo, clique no botão abaixo:</p>
+    <a href="{% url 'relatorio-anual' %}" class="button" target="_blank">Ver Relatório Anual</a>
+</div>
+{% endblock %}

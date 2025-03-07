@@ -1,0 +1,88 @@
+{% extends "admin/import_export/base.html" %}
+{% load i18n %}
+{% load admin_urls %}
+{% load import_export_tags %}
+
+{% block extrahead %}{{ block.super }}
+<script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+{{ form.media }}
+{% endblock %}
+
+{% block content %}
+<div style="padding: 15px; background: #fffae6; border: 1px solid #ffcc00; margin-bottom: 20px;">
+  <h3 style="margin: 0; color: #d35400;">⚠ Atenção:</h3>
+  <p>
+    Utilize esta funcionalidade para exportar os dados das viaturas. Certifique-se de selecionar os campos desejados antes de continuar.
+  </p>
+</div>
+
+{% if form.errors %}
+{{ form.errors }}
+{% endif %}
+
+<form action="{{ export_url }}" method="POST">
+  {% csrf_token %}
+
+  {% if form.initial.export_items %}
+  <p>
+    {% blocktranslate count len=form.initial.export_items|length %}
+    Exportar {{ len }} item selecionado.
+    {% plural %}
+    Exportar {{ len }} itens selecionados.
+    {% endblocktranslate %}
+  </p>
+  {% endif %}
+
+  {% if not form.is_selectable_fields_form %}
+  {% include "admin/import_export/resource_fields_list.html" with import_or_export="export" %}
+  {% endif %}
+
+  <fieldset class="module">
+    {% for field in form.visible_fields %}
+    <div
+            {% if field.field.is_selectable_field %}
+            class="selectable-field-export-row"
+            resource-index="{{ field.field.resource_index }}"
+            {% else %}
+            class="form-row aligned"
+            {% endif %}
+    >
+      {% if field.field.initial_field %}
+      <p style="padding: 0; font-weight: bold;">📌 Selecione os campos para exportação:</p>
+      {% endif %}
+      {{ field.errors }}
+
+      {% if not field.field.is_selectable_field %}
+      {{ field.label_tag }}
+      {% endif %}
+
+      {% if field.field.widget.attrs.readonly %}
+      {{ field.field.value }}
+      {{ field.as_hidden }}
+      {% else %}
+      {{ field }}
+      {% endif %}
+
+      {% if field.field.is_selectable_field %}
+      {{ field.label_tag }}
+      {% endif %}
+
+      {% if field.field.help_text %}
+      <p class="help">{{ field.field.help_text|safe }}</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+    {% for field in form.hidden_fields %}
+    {{ field }}
+    {% endfor %}
+  </fieldset>
+
+  <div>
+    {{ form.non_field_errors }}
+  </div>
+
+  <div class="submit-row">
+    <input type="submit" class="bg-red-600 block border border-transparent font-medium px-3 py-2 rounded-md text-white w-full lg:w-auto" value="Exportar">
+  </div>
+</form>
+{% endblock %}
